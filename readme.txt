@@ -1,7 +1,7 @@
 Models have been trained using Tensorflow v2.4. Additional libraries required are numpy, scipy, pandas, SimpleITK
 
-Original Training images should be in 'TrainingImg' & 'TrainingMask' Folders. Similarly, Validation images should be put int 'ValidationImg' and the inference output will be produced in 'ValidationMask'
-Pre-process by executing split_flare_labels_to_nii.py which splits each label into individual files and attempts to detect right/left kidney as contiguous regions
+Original Training images should be in 'TrainingImg' & 'TrainingMask' Folders. Similarly, Validation images should be put into 'ValidationImg' and the inference output will be produced in 'ValidationMask'
+Pre-process by executing split_flare_labels_to_nii.py which splits each label into individual files and attempts to detect right/left kidney as contiguous regions based on the centre of mass in the CT image set.
 Processed .nii images should be in ct, rkid, lkid, liver, spleen, pancreas folders
 
 Training runs for each organ independently with 2 stages, localisation and segmentation.
