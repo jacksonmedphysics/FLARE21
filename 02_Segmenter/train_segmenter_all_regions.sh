@@ -1,0 +1,5 @@
+python Cropped_Segmenter_min_output.py liver "128 128 112"
+python Cropped_Segmenter_min_output.py lt_kidney "112 112 128"
+python Cropped_Segmenter_min_output.py rt_kidney "112 112 128"
+python Cropped_Segmenter_min_output.py spleen "128 128 128"
+python Cropped_Segmenter_min_output.py pancreas "160 112 128"
