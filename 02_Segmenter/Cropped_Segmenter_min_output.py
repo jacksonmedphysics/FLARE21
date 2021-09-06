@@ -25,7 +25,7 @@ import datetime
 
 from scipy.signal import fftconvolve
 
-global epoch_dir
+
 import sys
 import argparse
 from tensorflow.keras.callbacks import CSVLogger
@@ -63,17 +63,16 @@ python Cropped_Segmenter_min_output.py pancreas "160 160 144"
 fname=os.path.basename(__file__).replace('.py','')+'-'+region+'-'+spacing_string
 print(fname)
 
-#sys.exit()
 def new_dir(d):
     if not os.path.exists(d):
         os.mkdir(d)
     return
 new_dir('logs')
 new_dir('models')
-#new_dir(fname)
-validation_epochs=join('validation_epochs',fname)
-new_dir(validation_epochs)
-data_dir='../data'
+
+
+data_dir='../data' 
+n_epochs=100 
 
 casedf=pd.read_csv('flare21_caselist_shuffled.csv',index_col=0)
 
@@ -145,24 +144,10 @@ def testing_generator(validation_cases):
      
 if __name__ == '__main__':
 
-    epoch_dir=validation_epochs
 
-    
-    if validation_case_path:  #catch to retrain with selected validation cases
-        validation_cases=[]
-        f=open(validation_case_path,'r')
-        for case in f.readlines():
-            validation_cases.append(case.replace('\n',''))
-        f.close()
-        training_cases=[]
-        for case in cases:
-            if case not in validation_cases:
-                training_cases.append(case)
-    else: 
-
-        num_training=int(len(cases)*(training_percent/100.))
-        training_cases=cases[:num_training]
-        validation_cases=cases[num_training:]
+    num_training=int(len(cases)*(training_percent/100.))
+    training_cases=cases[:num_training]
+    validation_cases=cases[num_training:]
 
     print(cases)
     num_training_cases=len(training_cases)
@@ -182,7 +167,7 @@ if __name__ == '__main__':
     csv_logger = CSVLogger('logs/'+fname+'.csv')
     
     callbacks=[checkpointer,csv_logger]
-    history=model.fit(x=gen,validation_data=gen_test, epochs=100, callbacks=callbacks,steps_per_epoch=int(num_training_cases),validation_steps=int(num_testing_cases))  #(available_cases-validation_size)
+    history=model.fit(x=gen,validation_data=gen_test, epochs=n_epochs, callbacks=callbacks,steps_per_epoch=int(num_training_cases),validation_steps=int(num_testing_cases))  #(available_cases-validation_size)
     print(history.history.keys())
     hist_df = pd.DataFrame(history.history)
 
