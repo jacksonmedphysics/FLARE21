@@ -69,7 +69,15 @@ new_dir('logs')
 new_dir('models')
 
 
-data_dir='../data'
+data_dir='../data' #location of ct and lable .nii folders
+n_epochs=100 #100
+
+casedf=pd.read_csv('flare21_caselist_shuffled.csv',index_col=0)
+
+casedf=casedf[casedf[region]>0] #addition to remove nil labels which don't have a crop region
+
+cases=casedf.case.values.tolist()
+
 
 log_dir="logs/"+fname + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
 label_dir=join(data_dir,region)
@@ -262,8 +270,8 @@ def augment_case(x,y):
 
 def load_case(label_name,augment=True):
     while True:
-        ct=sitk.Cast(sitk.ReadImage(join(ct_dir,label_name+'.nii.gz')),sitk.sitkInt16)
-        label=sitk.ReadImage(join(label_dir,label_name+'.nii.gz'))
+        ct=sitk.Cast(sitk.ReadImage(join(ct_dir,label_name)),sitk.sitkInt16)
+        label=sitk.ReadImage(join(label_dir,label_name))
         rs=sitk.ResampleImageFilter()
         rs.SetReferenceImage(ct)
         rs.SetInterpolator(sitk.sitkNearestNeighbor)
@@ -318,8 +326,8 @@ def load_case(label_name,augment=True):
 
 def load_validation_case(label_name):
     if True:
-        ct=sitk.Cast(sitk.ReadImage(join(ct_dir,label_name+'.nii.gz')),sitk.sitkInt16)
-        label=sitk.ReadImage(join(label_dir,label_name+'.nii.gz'))
+        ct=sitk.Cast(sitk.ReadImage(join(ct_dir,label_name)),sitk.sitkInt16)
+        label=sitk.ReadImage(join(label_dir,label_name))
         rs=sitk.ResampleImageFilter()
         rs.SetReferenceImage(ct)
         rs.SetInterpolator(sitk.sitkNearestNeighbor)
@@ -380,30 +388,13 @@ def testing_generator(validation_cases):
 
      
 if __name__ == '__main__':
-    cases=[]
-    for f in os.listdir(label_dir):
-        if 'FLARE21' in f:
-            cases.append(f.replace('.nii.gz',''))
 
-    
-    if validation_case_path:  #catch to retrain with selected validation cases
-        validation_cases=[]
-        f=open(validation_case_path,'r')
-        for case in f.readlines():
-            validation_cases.append(case.replace('\n',''))
-        f.close()
-        training_cases=[]
-        for case in cases:
-            if case not in validation_cases:
-                training_cases.append(case)
-    else: 
-        random.shuffle(cases)
-        num_training=int(len(cases)*(training_percent/100.))
-        num_validation=int(len(cases))-num_training
-        if num_validation<5:
-            num_training=int(len(cases))-5 #makes sure there are at least 5 validation cases
-        training_cases=cases[:num_training]
-        validation_cases=cases[num_training:]
+    num_training=int(len(cases)*(training_percent/100.))
+    num_validation=int(len(cases))-num_training
+    if num_validation<5:
+        num_training=int(len(cases))-5 #makes sure there are at least 5 validation cases
+    training_cases=cases[:num_training]
+    validation_cases=cases[num_training:]
     print(cases)
     num_training_cases=len(training_cases)
     num_testing_cases=len(validation_cases)
@@ -423,7 +414,7 @@ if __name__ == '__main__':
     
 
     callbacks=[checkpointer,csv_logger]
-    history=model.fit(x=gen,validation_data=gen_test, epochs=100, callbacks=callbacks,steps_per_epoch=int(num_training_cases),validation_steps=int(num_testing_cases))  #(available_cases-validation_size)
+    history=model.fit(x=gen,validation_data=gen_test, epochs=n_epochs, callbacks=callbacks,steps_per_epoch=int(num_training_cases),validation_steps=int(num_testing_cases))  #(available_cases-validation_size)
     print(history.history.keys())
     hist_df = pd.DataFrame(history.history)
 
